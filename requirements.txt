@@ -22,6 +22,3 @@ Werkzeug
 gunicorn
 psycopg2-binary
 reportlab
-
-Flask==3.0.0
-Werkzeug==3.0.1
