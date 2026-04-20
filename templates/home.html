@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Joint - Banking, Credit Cards, Loans and Investing{% endblock %}
+{% block body_class %}home-page{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}?v=15">
+{% endblock %}
+
+{% block header %}
+<header class="home-header">
+  <div class="home-disclaimer">
+    <div class="container home-disclaimer-inner">
+      <span>
+        <i>JOINT</i> <strong>FDIC</strong> <i>FDIC insured — Backed by the full faith and credit of the U.S. Government</i>
+      </span>
+    </div>
+  </div>
+
+  <div class="home-utility">
+    <div class="container home-utility-inner">
+      <nav class="home-utility-left">
+        <a href="{{ url_for('main.home') }}" class="active">Personal</a>
+        <a href="https://www.ml.com/wealthmanagement.html">Wealth Management</a>
+        <a href="https://www.bankofamerica.com/business/">Business</a>
+        <a href="https://business.bofa.com/content/boaml/en_us/home.html">Corporations &amp; Institutions</a>
+      </nav>
+
+      <nav class="home-utility-right">
+        <a href="https://web.bankofamerica.com/en/security">Security</a>
+        <a href="https://about.bankofamerica.com/en">About Us</a>
+        <a href="#">En español</a>
+        <a href="{{url_for('app.contact')}}" class="contact-trigger">Contact Us</a>
+        <a href="#">Help</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="home-brand-row">
+    <div class="container home-brand-inner">
+      <a href="{{ url_for('main.home') }}" class="home-brand">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Joint logo" class="home-logo">
+      </a>
+
+      <div class="home-search">
+        <input type="text" placeholder="Search" />
+        <button type="button" aria-label="Search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="home-category-row">
+  <div class="container home-category-inner">
+    <div class="home-category-nav" role="tablist" aria-label="Banking options">
+      <button type="button" class="category-link active" aria-pressed="true" data-option="Checking">Checking</button>
+      <button type="button" class="category-link" aria-pressed="false" data-option="Savings & CDs">Savings &amp; CDs</button>
+      <button type="button" class="category-link" aria-pressed="false" data-option="Credit Cards">Credit Cards</button>
+      <button type="button" class="category-link" aria-pressed="false" data-option="Home Loans">Home Loans</button>
+      <button type="button" class="category-link" aria-pressed="false" data-option="Auto Loans">Auto Loans</button>
+      <button type="button" class="category-link" aria-pressed="false" data-option="Investing">Investing</button>
+      <button type="button" class="category-link" aria-pressed="false" data-option="Better Money Habits">Better Money Habits<sup>®</sup></button>
+    </div>
+  </div>
+</div>
+
+<div id="pageMessage" class="page-message" role="status" aria-live="polite">
+  This page is currently not available, try again later
+</div>
+</header>
+{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+  <div class="container hero-grid">
+    <!-- Login card -->
+    <aside class="login-card">
+      <div class="login-accent"></div>
+
+      <div class="login-body">
+        <h2>Sign in</h2>
+        <p>Access your secure account dashboard.</p>
+
+        <form method="POST" action="{{ url_for('auth.login') }}" class="login-form">
+          {{ login_form.hidden_tag() }}
+
+          <label for="user_id">User ID</label>
+          {{ login_form.user_id(class="form-control login-input", id="user_id", placeholder="Enter your User ID") }}
+
+          <label for="password">Password</label>
+          <div class="password-wrap">
+            {{ login_form.password(class="form-control login-input", id="password", placeholder="Enter your password") }}
+            <button type="button" class="toggle-password" aria-label="Toggle password visibility">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+
+          <label class="save-row">
+            {{ login_form.remember(class="form-check-input") }}
+            <span>{{ login_form.remember.label.text }}</span>
+          </label>
+
+          <button class="primary-login-btn" type="submit">
+            {{ login_form.submit.label.text }}
+          </button>
+
+          <div class="login-links">
+            <a href="#">Forgot user ID/password</a>
+            <a href="#">Security &amp; Help</a>
+            <a href="{{ url_for('auth.register') }}">Enroll</a>
+          </div>
+        </form>
+      </div>
+    </aside>
+
+    <!-- Promo area -->
+    <section class="promo-area">
+      <h1>Choose the card that works for you</h1>
+
+      <div class="promo-stats">
+        <div class="promo-stat">
+          <div class="value">6%</div>
+          <div class="label">cash back offer</div>
+          <div class="note">No annual fee.</div>
+        </div>
+
+        <div class="promo-stat">
+          <div class="value">2%</div>
+          <div class="label">cash back offer</div>
+          <div class="note">No annual fee.</div>
+        </div>
+
+        <div class="promo-stat">
+          <div class="value">1.5</div>
+          <div class="label">points for every $1</div>
+          <div class="note">No annual fee.</div>
+        </div>
+
+        <div class="promo-stat">
+          <div class="value">0%</div>
+          <div class="label">intro APR offer</div>
+          <div class="note">No annual fee.</div>
+        </div>
+      </div>
+
+      <div class="cards-grid">
+        <article class="promo-card">
+          <img
+            src="{{ url_for('static', filename='img/cards/citiBlue.jpg') }}"
+            alt="Northstar Platinum"
+            class="promo-card-image"
+          >
+          <div class="promo-card-info">
+            <div class="card-name">JOINT</div>
+            <div class="card-type">Rewards Visa</div>
+          </div>
+        </article>
+
+        <article class="promo-card">
+          <img
+            src="{{ url_for('static', filename='img/cards/citiBlack.jpg') }}"
+            alt="Northstar Silver"
+            class="promo-card-image"
+          >
+          <div class="promo-card-info">
+            <div class="card-name">JOINT</div>
+            <div class="card-type">Cash Back Visa</div>
+          </div>
+        </article>
+
+        <article class="promo-card">
+          <img
+            src="{{ url_for('static', filename='img/cards/waveCitiBlack.jpg') }}"
+            alt="Northstar Travel"
+            class="promo-card-image"
+          >
+          <div class="promo-card-info">
+            <div class="card-name">JOINT</div>
+            <div class="card-type">Signature Card</div>
+          </div>
+        </article>
+
+        <article class="promo-card">
+          <div class="offer-badge">NEW OFFER</div>
+          <img
+            src="{{ url_for('static', filename='img/cards/grayCiti.jpg') }}"
+            alt="Northstar Classic"
+            class="promo-card-image"
+          >
+          <div class="promo-card-info">
+            <div class="card-name">JOINT</div>
+            <div class="card-type">Everyday Spending</div>
+          </div>
+        </article>
+      </div>
+
+      <div class="offer-links">
+        <a href="#">$200 online bonus offer</a>
+        <a href="#">$200 online bonus offer</a>
+        <a href="#">25,000 online bonus points offer</a>
+        <a href="#">Intro APR offer for 21 billing cycles</a>
+      </div>
+    </section>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const toggleBtn = document.querySelector(".toggle-password");
+  const passwordInput = document.querySelector("#password");
+  const icon = toggleBtn?.querySelector("i");
+
+  if (toggleBtn && passwordInput && icon) {
+    toggleBtn.addEventListener("click", () => {
+      const isPassword = passwordInput.type === "password";
+      passwordInput.type = isPassword ? "text" : "password";
+      icon.classList.toggle("fa-eye");
+      icon.classList.toggle("fa-eye-slash");
+    });
+  }
+});
+</script>
+{% endblock %}

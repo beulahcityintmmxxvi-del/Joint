@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/receipt.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="receipt-shell">
+
+  <section class="receipt-hero">
+    <div class="eyebrow">
+      <i class="fa-solid fa-circle-check"></i>
+      Transfer completed successfully
+    </div>
+
+    <h1>Transaction Receipt</h1>
+    <p>Your transfer has been processed and recorded securely.</p>
+  </section>
+
+  <section class="receipt-card">
+    <div class="receipt-top">
+      <div class="receipt-brand">
+        <div class="brand-mark">
+          <i class="fa-solid fa-building-columns"></i>
+        </div>
+        <div>
+          <strong>{{ account.bank_name }}</strong>
+          <span>Official Receipt</span>
+        </div>
+      </div>
+
+      <div class="receipt-status success">
+        <i class="fa-solid fa-check"></i>
+        Completed
+      </div>
+    </div>
+
+    <div class="receipt-meta">
+      <div class="meta-item">
+        <span>Receipt Reference</span>
+        <strong>{{ receipt_ref }}</strong>
+      </div>
+      <div class="meta-item">
+        <span>Transaction ID</span>
+        <strong>#{{ tx.id }}</strong>
+      </div>
+      <div class="meta-item">
+        <span>Date & Time</span>
+        <strong>{{ tx.created_at.strftime('%b %d, %Y %I:%M %p') }}</strong>
+      </div>
+      <div class="meta-item">
+        <span>Account Number</span>
+        <strong>{{ account.account_number }}</strong>
+      </div>
+    </div>
+
+    <div class="receipt-details">
+      <div class="detail-row">
+        <span>Sender</span>
+        <strong>{{ current_user.full_name }}</strong>
+      </div>
+
+      <div class="detail-row">
+        <span>Receiver</span>
+        <strong>{{ tx.receiver }}</strong>
+      </div>
+
+      <div class="detail-row">
+        <span>Purpose</span>
+        <strong>{{ tx.purpose }}</strong>
+      </div>
+
+      <div class="detail-row">
+        <span>Transaction Type</span>
+        <strong>{{ tx.tx_type|capitalize }}</strong>
+      </div>
+
+      <div class="detail-row amount-row">
+        <span>Amount</span>
+        <strong>${{ '{:,.2f}'.format(tx.amount_cents / 100) }}</strong>
+      </div>
+
+      <div class="detail-row">
+        <span>Status</span>
+        <strong class="success-text">Completed</strong>
+      </div>
+    </div>
+
+    <div class="balance-box">
+      <span>Remaining Balance</span>
+      <strong>${{ '{:,.2f}'.format(account.balance_cents / 100) }}</strong>
+    </div>
+
+    <div class="receipt-actions">
+      <a href="{{ url_for('main.dashboard') }}" class="btn-pill btn-secondary-pill">
+        <i class="fa-solid fa-gauge-high"></i>
+        Back to Dashboard
+      </a>
+
+      <button onclick="window.print()" class="btn-pill btn-primary-pill">
+        <i class="fa-solid fa-print"></i>
+        Print Receipt
+      </button>
+
+      <a href="{{ url_for('main.transfer') }}" class="btn-pill btn-secondary-pill">
+        <i class="fa-solid fa-paper-plane"></i>
+        New Transfer
+      </a>
+    </div>
+  </section>
+</div>
+
+<script src="{{ url_for('static', filename='js/receipt.js') }}"></script>
+{% endblock %}

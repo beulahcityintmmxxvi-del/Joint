@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/transactions.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="tx-shell">
+
+  <!-- Hero -->
+  <section class="tx-hero">
+    <div class="tx-hero-copy">
+      <div class="eyebrow">
+        <i class="fa-solid fa-receipt"></i>
+        Account activity
+      </div>
+
+      <h1>Transaction History</h1>
+      <p>Review completed, pending, and failed transfers with fast filtering and detail views.</p>
+    </div>
+
+    <div class="tx-summary-grid">
+      <div class="summary-card">
+        <span>Total Sent</span>
+        <strong>${{ '{:,.2f}'.format(total_sent_cents / 100) }}</strong>
+      </div>
+      <div class="summary-card">
+        <span>Total Received</span>
+        <strong>${{ '{:,.2f}'.format(total_received_cents / 100) }}</strong>
+      </div>
+      <div class="summary-card">
+        <span>Pending</span>
+        <strong>{{ pending_count }}</strong>
+      </div>
+      <div class="summary-card">
+        <span>This Month</span>
+        <strong>${{ '{:,.2f}'.format(month_total_cents / 100) }}</strong>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filters -->
+  <section class="panel filter-panel">
+    <form method="GET" class="filter-form">
+      <div class="field search-field">
+        <label>Search</label>
+        <input
+          type="text"
+          name="q"
+          value="{{ filters.q }}"
+          placeholder="Receiver or purpose"
+        >
+      </div>
+
+      <div class="field">
+        <label>Type</label>
+        <select name="type">
+          <option value="all" {% if filters.type == 'all' %}selected{% endif %}>All</option>
+          <option value="debit" {% if filters.type == 'debit' %}selected{% endif %}>Debit</option>
+          <option value="credit" {% if filters.type == 'credit' %}selected{% endif %}>Credit</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Status</label>
+        <select name="status">
+          <option value="all" {% if filters.status == 'all' %}selected{% endif %}>All</option>
+          <option value="completed" {% if filters.status == 'completed' %}selected{% endif %}>Completed</option>
+          <option value="pending" {% if filters.status == 'pending' %}selected{% endif %}>Pending</option>
+          <option value="failed" {% if filters.status == 'failed' %}selected{% endif %}>Failed</option>
+        </select>
+      </div>
+
+      <div class="filter-actions">
+        <button type="submit" class="btn-pill btn-primary-pill">
+          <i class="fa-solid fa-filter"></i>
+          Apply
+        </button>
+        <a href="{{ url_for('main.transactions') }}" class="btn-pill btn-secondary-pill">
+          <i class="fa-solid fa-rotate-right"></i>
+          Reset
+        </a>
+      </div>
+    </form>
+  </section>
+
+  <!-- Table -->
+  <section class="panel table-panel">
+    <div class="panel-header">
+      <div>
+        <h2>All Transactions</h2>
+        <p>{{ transactions|length }} record(s) found</p>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="tx-table">
+        <thead>
+          <tr>
+            <th>Date & Time</th>
+            <th>Receiver</th>
+            <th>Purpose</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th class="text-end">Amount</th>
+            <th class="text-end">Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for tx in transactions %}
+          <tr>
+            <td>
+              <div class="date-cell">
+                <strong>{{ tx.created_at.strftime('%b %d, %Y') }}</strong>
+                <span>{{ tx.created_at.strftime('%I:%M %p') }}</span>
+              </div>
+            </td>
+
+            <td>
+              <div class="receiver-cell">
+                <strong>{{ tx.receiver }}</strong>
+                <span>Transaction #{{ tx.id }}</span>
+              </div>
+            </td>
+
+            <td>
+              <span class="purpose-text">{{ tx.purpose }}</span>
+            </td>
+
+            <td>
+              <span class="type-badge {{ tx.tx_type }}">
+                {% if tx.tx_type == 'debit' %}
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                  Debit
+                {% else %}
+                  <i class="fa-solid fa-arrow-down-left"></i>
+                  Credit
+                {% endif %}
+              </span>
+            </td>
+
+            <td>
+              {% if tx.status == "completed" %}
+                <span class="status-badge success">Completed</span>
+              {% elif tx.status == "pending" %}
+                <span class="status-badge warning">Pending</span>
+              {% else %}
+                <span class="status-badge failed">Failed</span>
+              {% endif %}
+            </td>
+
+            <td class="amount-cell text-end {% if tx.tx_type == 'debit' %}negative{% else %}positive{% endif %}">
+              {% if tx.tx_type == 'debit' %}-{% else %}+{% endif %}${{ '{:,.2f}'.format(tx.amount_cents / 100) }}
+            </td>
+
+            <td class="text-end">
+              <button
+                type="button"
+                class="view-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#txModal"
+                data-id="{{ tx.id }}"
+                data-date="{{ tx.created_at.strftime('%b %d, %Y %I:%M %p') }}"
+                data-receiver="{{ tx.receiver }}"
+                data-purpose="{{ tx.purpose }}"
+                data-type="{{ tx.tx_type }}"
+                data-status="{{ tx.status }}"
+                data-amount="{{ '{:,.2f}'.format(tx.amount_cents / 100) }}"
+              >
+                View
+              </button>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <i class="fa-regular fa-folder-open"></i>
+                <h4>No transactions found</h4>
+                <p>Try changing your filters or make a new transfer.</p>
+                <a href="{{ url_for('main.transfer') }}" class="btn-pill btn-primary-pill">
+                  <i class="fa-solid fa-paper-plane"></i>
+                  New Transfer
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="txModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content tx-modal">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">Transaction Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="detail-grid">
+          <div>
+            <span>Transaction ID</span>
+            <strong id="modal-id"></strong>
+          </div>
+          <div>
+            <span>Date & Time</span>
+            <strong id="modal-date"></strong>
+          </div>
+          <div>
+            <span>Receiver</span>
+            <strong id="modal-receiver"></strong>
+          </div>
+          <div>
+            <span>Purpose</span>
+            <strong id="modal-purpose"></strong>
+          </div>
+          <div>
+            <span>Type</span>
+            <strong id="modal-type"></strong>
+          </div>
+          <div>
+            <span>Status</span>
+            <strong id="modal-status"></strong>
+          </div>
+          <div class="detail-amount">
+            <span>Amount</span>
+            <strong id="modal-amount"></strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/transactions.js') }}"></script>
+{% endblock %}

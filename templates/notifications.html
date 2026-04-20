@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="notif-shell">
+
+  
+  <section class="notif-hero">
+    <div class="notif-hero-copy">
+      <div class="eyebrow">
+        <i class="fa-solid fa-bell"></i>
+        Alerts center
+      </div>
+
+      <h1>Stay updated on your account activity.</h1>
+      <p>
+        View security notices, transfer updates, and account alerts in one secure place.
+      </p>
+
+      <div class="hero-actions">
+        <form method="POST" action="{{ url_for('main.read_all_notifications') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-pill btn-primary-pill">
+                <i class="fa-solid fa-check-double"></i>
+                Mark All Read
+            </button>
+        </form>
+
+        <a href="{{ url_for('main.dashboard') }}" class="btn-pill btn-secondary-pill">
+          <i class="fa-solid fa-gauge-high"></i>
+          Back to Dashboard
+        </a>
+      </div>
+    </div>
+
+    <div class="notif-summary-grid">
+      <div class="summary-card">
+        <span>Unread</span>
+        <strong>{{unread_count}}</strong>
+      </div>
+      <div class="summary-card">
+        <span>Security</span>
+        <strong>{{security_count}}</strong>
+      </div>
+      <div class="summary-card">
+        <span>Transfers Made</span>
+        <strong>{{total_transferred}}</strong>
+      </div>
+      <div class="summary-card">
+        <span>Account</span>
+        <strong>{{account_count}}</strong>
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="panel notif-panel">
+    <div class="panel-header">
+      <div>
+        <h2>Recent Notifications</h2>
+        <p>{{notifications|length}} alert(s) found</p>
+      </div>
+    </div>
+
+    <div class="notif-list">
+      {% for note in notifications %}
+      <article class="notif-item {% if not note.is_read %}unread{% endif %}">
+        <div class="notif-accent {{ note.category }}"></div>
+
+        <div class="notif-icon {{ note.category }}">
+          {% if note.category == "security" %}
+            <i class="fa-solid fa-shield-halved"></i>
+          {% elif note.category == "transfer" %}
+            <i class="fa-solid fa-money-bill-transfer"></i>
+          {% elif note.category == "account" %}
+            <i class="fa-solid fa-user-gear"></i>
+          {% else %}
+            <i class="fa-solid fa-circle-info"></i>
+          {% endif %}
+        </div>
+
+        <div class="notif-content">
+          <div class="notif-top">
+            <div>
+              <h3>{{ note.title }}</h3>
+              <span>{{ note.created_at.strftime('%b %d, %Y %I:%M %p') }}</span>
+            </div>
+
+            {% if not note.is_read %}
+              <span class="unread-dot">New</span>
+            {% endif %}
+          </div>
+
+          <p>{{ note.message }}</p>
+
+          <div class="notif-footer">
+            <span class="category-badge {{ note.category }}">{{ note.category|capitalize }}</span>
+
+            {% if note.is_read %}
+              <span class="read-status">
+                <i class="fa-solid fa-check"></i>
+                Read
+              </span>
+            {% else %}
+             <form method="POST" action="{{ url_for('main.read_notification', notif_id=note.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="read-btn">Mark as read</button>
+             </form>
+            {% endif %}
+          </div>
+        </div>
+      </article>
+      {% else %}
+      <div class="empty-state">
+        <i class="fa-regular fa-bell"></i>
+        <h4>No notifications yet</h4>
+        <p>You’ll see security and transfer updates here.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+
+<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+{% endblock %}

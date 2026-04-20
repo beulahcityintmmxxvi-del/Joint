@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block title %}Joint | Dashboard{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=3">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/security-modal.css') }}?v=1">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-shell">
+
+  <section class="dash-hero">
+    <div class="dash-copy">
+      <div class="eyebrow">
+        <i class="fa-solid fa-shield-halved"></i>
+        Secure account dashboard
+      </div>
+
+      <h1>Welcome back, {{ current_user.full_name }}.</h1>
+      <p>
+        Manage your funds, review your latest activity, and access account tools from one secure place.
+      </p>
+
+      <div class="hero-actions">
+        <button
+          type="button"
+          class="btn-pill btn-primary-pill"
+          data-bs-toggle="modal"
+          data-bs-target="#securityModal"
+        >
+          <i class="fa-solid fa-paper-plane"></i>
+          Transfer
+        </button>
+
+        <button
+          type="button"
+          class="btn-pill btn-secondary-pill"
+          data-bs-toggle="modal"
+          data-bs-target="#securityModal"
+        >
+          <i class="fa-solid fa-money-bill-transfer"></i>
+          Withdraw
+        </button>
+      </div>
+    </div>
+
+    <div class="balance-card glass-card">
+      <div class="balance-top">
+        <span class="balance-label">Available Balance</span>
+        <i class="fa-solid fa-wallet"></i>
+      </div>
+
+      <div class="balance-amount">
+        ${{ '{:,.2f}'.format(account.balance_cents / 100) }}
+      </div>
+
+      <div class="account-meta">
+        <div>
+          <span>Bank</span>
+          <strong>{{ account.bank_name }}</strong>
+        </div>
+        <div>
+          <span>Account Number</span>
+          <strong>{{ account.account_number }}</strong>
+        </div>
+        <div>
+          <span>User ID</span>
+          <strong>{{ current_user.customer_id }}</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Overview Cards -->
+  <section class="overview-grid">
+    <article class="mini-card">
+      <div class="mini-icon blue">
+        <i class="fa-solid fa-building-columns"></i>
+      </div>
+      <div>
+        <span>Bank</span>
+        <strong>{{ account.bank_name }}</strong>
+      </div>
+    </article>
+
+    <article class="mini-card">
+      <div class="mini-icon red">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <div>
+        <span>Account Status</span>
+        <strong>Active</strong>
+      </div>
+    </article>
+
+    <article class="mini-card">
+      <div class="mini-icon gold">
+        <i class="fa-solid fa-money-bill-transfer"></i>
+      </div>
+      <div>
+        <span>Pending Actions</span>
+        <strong>Security Check Only</strong>
+      </div>
+    </article>
+
+    <article class="mini-card">
+      <div class="mini-icon green">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+      <div>
+        <span>Security</span>
+        <strong>Protected</strong>
+      </div>
+    </article>
+  </section>
+
+  <!-- Main Content -->
+  <section class="main-grid">
+    <div class="panel panel-large">
+      <div class="panel-header">
+        <div>
+          <h2>Recent Transactions</h2>
+          <p>Your latest account activity</p>
+        </div>
+
+        <a href="{{ url_for('main.transactions') }}" class="panel-link">
+          View all
+          <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="tx-list">
+        {% for tx in transactions %}
+        <article class="tx-row">
+          <div class="tx-icon {% if tx.tx_type == 'debit' %}debit{% else %}credit{% endif %}">
+            {% if tx.tx_type == 'debit' %}
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            {% else %}
+              <i class="fa-solid fa-arrow-down-left"></i>
+            {% endif %}
+          </div>
+
+          <div class="tx-info">
+            <strong>{{ tx.receiver }}</strong>
+            <span>{{ tx.purpose }}</span>
+          </div>
+
+          <div class="tx-date">
+            {{ tx.created_at.strftime('%b %d, %Y') }}
+            <small>{{ tx.created_at.strftime('%I:%M %p') }}</small>
+          </div>
+
+          <div class="tx-status">
+            {% if tx.status == "completed" %}
+              <span class="badge-status success">Completed</span>
+            {% elif tx.status == "pending" %}
+              <span class="badge-status warning">Pending</span>
+            {% else %}
+              <span class="badge-status failed">Failed</span>
+            {% endif %}
+          </div>
+
+          <div class="tx-amount {% if tx.tx_type == 'debit' %}negative{% else %}positive{% endif %}">
+            {% if tx.tx_type == 'debit' %}-{% else %}+{% endif %}${{ '{:,.2f}'.format(tx.amount_cents / 100) }}
+          </div>
+        </article>
+        {% else %}
+        <div class="empty-state">
+          <i class="fa-regular fa-folder-open"></i>
+          <p>No transactions found.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="side-stack">
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Quick Actions</h2>
+            <p>Common account tasks</p>
+          </div>
+        </div>
+
+        <div class="action-grid">
+          <button
+            type="button"
+            class="action-btn"
+            data-bs-toggle="modal"
+            data-bs-target="#securityModal"
+          >
+            <i class="fa-solid fa-paper-plane"></i>
+            <span>Transfer</span>
+          </button>
+
+          <button
+            type="button"
+            class="action-btn"
+            data-bs-toggle="modal"
+            data-bs-target="#securityModal"
+          >
+            <i class="fa-solid fa-money-bill-transfer"></i>
+            <span>Withdraw</span>
+          </button>
+
+          <a href="{{ url_for('main.profile') }}" class="action-btn">
+            <i class="fa-solid fa-user-gear"></i>
+            <span>Profile</span>
+          </a>
+
+          <a href="{{ url_for('main.notifications') }}" class="action-btn">
+            <i class="fa-solid fa-bell"></i>
+            <span>Alerts</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Profile</h2>
+            <p>Secure account details</p>
+          </div>
+        </div>
+
+        <div class="profile-card">
+          <div class="profile-avatar">
+            {{ current_user.full_name[:1] }}
+          </div>
+
+          <div class="profile-info">
+            <strong>{{ current_user.full_name }}</strong>
+            <span>{{ current_user.email }}</span>
+          </div>
+        </div>
+
+        <div class="profile-meta">
+          <div>
+            <span>Member since</span>
+            <strong>{{ current_user.created_at.strftime('%b %Y') }}</strong>
+          </div>
+          <div>
+            <span>Last login</span>
+            <strong>Today</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel safety-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Security Notice</h2>
+            <p>Action review is enabled</p>
+          </div>
+        </div>
+
+        <ul class="safety-list">
+          <li><i class="fa-solid fa-circle-check"></i> No payment will be processed during security review</li>
+          <li><i class="fa-solid fa-circle-check"></i> Actions may be temporarily blocked for safety</li>
+          <li><i class="fa-solid fa-circle-check"></i> Account activity is logged securely</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Security Modal -->
+<div class="modal fade" id="securityModal" tabindex="-1" aria-hidden="true"
+     data-return-url="{{ request.referrer or url_for('main.dashboard') }}">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content security-modal">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold">Security Verification</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <div id="securityStepOne">
+          <p class="mb-3">
+            For your security, this action is temporarily under review.
+            No payment will be processed during this check.
+          </p>
+
+          <div class="alert alert-info mb-0">
+            Please wait while we verify your request.
+          </div>
+        </div>
+
+        <div id="securityStepTwo" class="d-none text-center py-4">
+          <div class="spinner-border text-primary mb-3" role="status"></div>
+          <p class="mb-0">Processing your request...</p>
+        </div>
+
+        <div id="securityStepThree" class="d-none">
+          <div class="alert alert-warning mb-0">
+            The process cannot be completed at the moment; please try again after five minutes.
+            <br>
+            We are sorry for the inconvenience.
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="startSecurityCheck">
+          Continue
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/security-modal.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Joint | Profile{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}?v=2">
+{% endblock %}
+
+{% block content %}
+<div class="profile-shell">
+
+  <section class="profile-hero">
+    <div class="profile-hero-copy">
+      <div class="eyebrow">
+        <i class="fa-solid fa-user-shield"></i>
+        Account settings
+      </div>
+
+      <h1>Manage your profile and security.</h1>
+      <p>
+        Update your account details and keep your credentials protected.
+      </p>
+    </div>
+
+    <div class="profile-summary glass-card">
+      <div class="avatar-large">
+        {{ current_user.full_name[:1] }}
+      </div>
+
+      <div class="summary-lines">
+        <strong>{{ current_user.full_name }}</strong>
+        <span>{{ current_user.email }}</span>
+        <small>{{ account.bank_name }} • {{ account.account_number }}</small>
+      </div>
+    </div>
+  </section>
+
+  <section class="settings-grid">
+    <div class="stack">
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Profile Information</h2>
+            <p>Update your display name and email address.</p>
+          </div>
+        </div>
+
+        <form method="POST" class="settings-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="action" value="update_profile">
+
+          <div class="field">
+            <label>Full Name</label>
+            <input type="text" name="full_name" value="{{ current_user.full_name }}" required>
+          </div>
+
+          <div class="field">
+            <label>Email Address</label>
+            <input type="email" name="email" value="{{ current_user.email }}" required>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-pill btn-primary-pill">
+              <i class="fa-solid fa-floppy-disk"></i>
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Change Password</h2>
+            <p>Use a strong password to keep your account secure.</p>
+          </div>
+        </div>
+
+        <form method="POST" class="settings-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="action" value="change_password">
+
+          <div class="field">
+            <label>Current Password</label>
+            <input type="password" name="current_password" required>
+          </div>
+
+          <div class="field">
+            <label>New Password</label>
+            <input type="password" name="new_password" required>
+          </div>
+
+          <div class="field">
+            <label>Confirm New Password</label>
+            <input type="password" name="confirm_password" required>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-pill btn-primary-pill">
+              <i class="fa-solid fa-key"></i>
+              Update Password
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="side-stack">
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Account Snapshot</h2>
+            <p>Quick overview of your banking profile.</p>
+          </div>
+        </div>
+
+        <div class="snapshot-list">
+          <div class="snapshot-item">
+            <span>Bank</span>
+            <strong>{{ account.bank_name }}</strong>
+          </div>
+          <div class="snapshot-item">
+            <span>Account Number</span>
+            <strong>{{ account.account_number }}</strong>
+          </div>
+          <div class="snapshot-item">
+            <span>Balance</span>
+            <strong>${{ '{:,.2f}'.format(account.balance_cents / 100) }}</strong>
+          </div>
+          <div class="snapshot-item">
+            <span>Member Since</span>
+            <strong>{{ current_user.created_at.strftime('%b %Y') }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel security-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Security Status</h2>
+            <p>Account protection summary.</p>
+          </div>
+        </div>
+
+        <ul class="security-list">
+          <li><i class="fa-solid fa-circle-check"></i> Password stored securely with hashing</li>
+          <li><i class="fa-solid fa-circle-check"></i> Login session protected by Flask-Login</li>
+          <li><i class="fa-solid fa-circle-check"></i> Transaction OTP authorization enabled</li>
+          <li><i class="fa-solid fa-circle-check"></i> Email login required for access</li>
+        </ul>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Quick Links</h2>
+            <p>Common account actions.</p>
+          </div>
+        </div>
+
+        <div class="quick-links">
+          <a href="{{ url_for('main.dashboard') }}" class="quick-link">
+            <i class="fa-solid fa-gauge-high"></i>
+            Dashboard
+          </a>
+          <a href="{{ url_for('main.transactions') }}" class="quick-link">
+            <i class="fa-solid fa-receipt"></i>
+            Transactions
+          </a>
+          <a href="{{ url_for('main.transfer') }}" class="quick-link">
+            <i class="fa-solid fa-paper-plane"></i>
+            New Transfer
+          </a>
+          <a href="{{ url_for('auth.logout') }}" class="quick-link danger">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+{% endblock %}

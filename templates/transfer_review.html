@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/transfer.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="transfer-shell">
+  <section class="transfer-hero">
+    <div class="eyebrow">
+      <i class="fa-solid fa-circle-check"></i>
+      Review transfer details
+    </div>
+
+    <h1>Confirm your transaction.</h1>
+    <p>Please review the information below before authorizing this transfer with OTP.</p>
+  </section>
+
+  <section class="panel review-panel">
+    <div class="review-grid">
+      <div class="review-item">
+        <span>Receiver</span>
+        <strong>{{ draft.receiver }}</strong>
+      </div>
+
+      <div class="review-item">
+        <span>Purpose</span>
+        <strong>{{ draft.purpose }}</strong>
+      </div>
+
+      <div class="review-item amount-box">
+        <span>Amount</span>
+        <strong>${{ draft.amount_display }}</strong>
+      </div>
+
+      <div class="review-item">
+        <span>Bank</span>
+        <strong>{{ current_user.account.bank_name }}</strong>
+      </div>
+
+      <div class="review-item">
+        <span>Account Number</span>
+        <strong>{{ current_user.account.account_number }}</strong>
+      </div>
+
+      <div class="review-item">
+        <span>Authorization</span>
+        <strong>OTP required</strong>
+      </div>
+    </div>
+
+    <div class="review-actions">
+      <a href="{{ url_for('main.transfer') }}" class="btn-pill btn-secondary-pill">
+        <i class="fa-solid fa-arrow-left"></i>
+        Edit Transfer
+      </a>
+
+    <form method="POST" action="{{ url_for('main.transfer_confirm') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn-pill btn-primary-pill">
+            <i class="fa-solid fa-paper-plane"></i>
+            Confirm & Continue
+        </button>
+    </form>
+    </div>
+  </section>
+</div>
+
+<script src="{{ url_for('static', filename='js/transfer.js') }}"></script>
+{% endblock %}

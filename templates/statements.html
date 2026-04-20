@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/statements.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="stmt-shell">
+
+  <!-- Hero -->
+  <section class="stmt-hero">
+    <div class="stmt-copy">
+      <div class="eyebrow">
+        <i class="fa-solid fa-file-invoice"></i>
+        Monthly statements
+      </div>
+
+      <h1>Download and review your account statement.</h1>
+      <p>
+        View your monthly banking activity, balances, and transaction history in a clean statement format.
+      </p>
+    </div>
+
+    <div class="stmt-summary-grid">
+      <div class="summary-card">
+        <span>Opening Balance</span>
+        <strong>${{ '{:,.2f}'.format(opening_balance_cents / 100) }}</strong>
+      </div>
+      <div class="summary-card">
+        <span>Closing Balance</span>
+        <strong>${{ '{:,.2f}'.format(closing_balance_cents / 100) }}</strong>
+      </div>
+      <div class="summary-card">
+        <span>Total Debits</span>
+        <strong>${{ '{:,.2f}'.format(total_debits_cents / 100) }}</strong>
+      </div>
+      <div class="summary-card">
+        <span>Total Credits</span>
+        <strong>${{ '{:,.2f}'.format(total_credits_cents / 100) }}</strong>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filters / Downloads -->
+  <section class="panel filter-panel">
+    <form method="GET" class="stmt-form">
+      <div class="field">
+        <label>Month</label>
+        <select name="month">
+          {% for i in range(1, 13) %}
+            <option value="{{ i }}" {% if i == selected_month %}selected{% endif %}>
+              {{ ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][i-1] }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Year</label>
+        <select name="year">
+          {% for y in years %}
+            <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="filter-actions">
+        <button type="submit" class="btn-pill btn-primary-pill">
+          <i class="fa-solid fa-filter"></i>
+          Apply
+        </button>
+
+        <a class="btn-pill btn-secondary-pill" href="{{ url_for('main.statements') }}">
+          <i class="fa-solid fa-rotate-right"></i>
+          Reset
+        </a>
+
+        <a class="btn-pill btn-secondary-pill" href="{{ url_for('main.export_statement_csv', month=selected_month, year=selected_year) }}">
+          <i class="fa-solid fa-file-csv"></i>
+          CSV
+        </a>
+
+        <a class="btn-pill btn-secondary-pill" href="{{ url_for('main.export_statement_pdf', month=selected_month, year=selected_year) }}">
+          <i class="fa-solid fa-file-pdf"></i>
+          PDF
+        </a>
+      </div>
+    </form>
+  </section>
+
+  <!-- Statement Info -->
+  <section class="panel info-panel">
+    <div class="info-grid">
+      <div class="info-item">
+        <span>Statement Reference</span>
+        <strong>{{ statement_ref }}</strong>
+      </div>
+      <div class="info-item">
+        <span>Period</span>
+        <strong>{{ period_label }}</strong>
+      </div>
+      <div class="info-item">
+        <span>Completed</span>
+        <strong>{{ completed_count }}</strong>
+      </div>
+      <div class="info-item">
+        <span>Pending / Failed</span>
+        <strong>{{ pending_count }} / {{ failed_count }}</strong>
+      </div>
+    </div>
+  </section>
+
+  <!-- Table -->
+  <section class="panel table-panel">
+    <div class="panel-header">
+      <div>
+        <h2>Statement Transactions</h2>
+        <p>{{ period_txs|length }} record(s) found</p>
+      </div>
+      <a href="{{ url_for('main.dashboard') }}" class="panel-link">
+        Back to Dashboard
+        <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="stmt-table">
+        <thead>
+          <tr>
+            <th>Date & Time</th>
+            <th>Receiver</th>
+            <th>Purpose</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th class="text-end">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tx in period_txs %}
+          <tr>
+            <td>
+              <div class="date-cell">
+                <strong>{{ tx.created_at.strftime('%b %d, %Y') }}</strong>
+                <span>{{ tx.created_at.strftime('%I:%M %p') }}</span>
+              </div>
+            </td>
+
+            <td>
+              <div class="receiver-cell">
+                <strong>{{ tx.receiver }}</strong>
+                <span>Transaction #{{ tx.id }}</span>
+              </div>
+            </td>
+
+            <td>
+              <span class="purpose-text">{{ tx.purpose }}</span>
+            </td>
+
+            <td>
+              <span class="type-badge {{ tx.tx_type }}">
+                {% if tx.tx_type == 'debit' %}
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                  Debit
+                {% else %}
+                  <i class="fa-solid fa-arrow-down-left"></i>
+                  Credit
+                {% endif %}
+              </span>
+            </td>
+
+            <td>
+              {% if tx.status == "completed" %}
+                <span class="status-badge success">Completed</span>
+              {% elif tx.status == "pending" %}
+                <span class="status-badge warning">Pending</span>
+              {% else %}
+                <span class="status-badge failed">Failed</span>
+              {% endif %}
+            </td>
+
+            <td class="amount-cell text-end {% if tx.tx_type == 'debit' %}negative{% else %}positive{% endif %}">
+              {% if tx.tx_type == 'debit' %}-{% else %}+{% endif %}${{ '{:,.2f}'.format(tx.amount_cents / 100) }}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6">
+              <div class="empty-state">
+                <i class="fa-regular fa-folder-open"></i>
+                <h4>No statement records found</h4>
+                <p>Try another month or make a transfer.</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script src="{{ url_for('static', filename='js/statements.js') }}"></script>
+{% endblock %}
